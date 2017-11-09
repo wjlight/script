@@ -1,0 +1,42 @@
+#!/bin/sh  
+
+
+function define()
+{
+  ori_log_path="/data/log/nginx/access-json.log"
+  tmp_log_path="/data/log/nginx/5min_abc.access.log"
+  date_stamp=`date -d "-5min" +%Y-%m-%dT%H:%M:%S`
+  #day_stamp=`date +%d`
+  rm -f /data/log/nginx/5min_abc.access.log
+}
+
+function gather()
+{
+  awk -F '"' -vnstamp="$date_stamp" '$4>=nstamp && $10>1.0' ${ori_log_path} > ${tmp_log_path}
+  log_num=`cat ${tmp_log_path} | wc -l`
+  #rm -f /usr/local/nginx/logs/5min_abc.access.log
+}
+
+function output()
+{
+  echo "abc log_gt_0.3_num is ${log_num}"
+}
+
+function sendmail()
+{
+  if [ $log_num -gt 10 ];then
+     echo -e "onlineParam log_gt_1.0_num is ${log_num}\n "|mail -s 'nginx log 报警,OnlineParam Last five minutes' 245484471@qq.com
+ fi
+
+  echo "sendmail"
+}
+
+function main()
+{
+  define
+  gather
+  output
+  sendmail
+}
+
+main
